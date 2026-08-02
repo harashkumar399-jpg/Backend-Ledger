@@ -46,7 +46,7 @@ async function authSystemUserMiddleware(req, res, next) {
 
     if(!token) {
         return res.status(401).json({
-            message: "Unauthorize access, token is missing"
+            message: "Unauthorized access, token is missing"
         })
     }
 
@@ -63,15 +63,15 @@ async function authSystemUserMiddleware(req, res, next) {
 
         const user = await userModel.findById(decoded.userId).select("+systemUser");
         
-         if(!user.systemUser) {
-            return res.status(403).json({
-                message: "Forbidden access, not a system user"
+        if (!user) {
+            return res.status(401).json({
+                message: "User not found"
             })
-         }
+        }
          
-         req.user = user;
+        req.user = user;
 
-         return next();
+        return next();
 
     }catch(err){
 

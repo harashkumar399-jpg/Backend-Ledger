@@ -1,6 +1,7 @@
 const transactionModel = require('../models/transaction.model');
 const ledgerModel = require('../models/ledger.model');
 const accountModel = require('../models/account.model');
+const userModel = require('../models/user.model');
 const emailService = require('../services/email.service');
 const mongoose = require('mongoose');
 
@@ -132,12 +133,10 @@ async function createTransaction(req, res) {
     }], { session });
     
     /**
-     * step 6.5: simulate a delay to mimic real-world processing time
-     * This is to demonstrate the idempotency key functionality
-     * In a real-world scenario, this would be replaced with actual processing logic
+     * step 6.5: simulate a short delay to mimic processing time
      */
     await (() => {
-        return new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+        return new Promise((resolve) => setTimeout(resolve, 200));
     })();
 
     /**
@@ -167,7 +166,7 @@ async function createTransaction(req, res) {
 }catch(err){
 
     return res.status(500).json({
-        message: "Transaction is still processing, please try again later",
+        message: "Transaction processing failed, please try again later",
     })
 }
     /**
@@ -203,52 +202,89 @@ async function createInitialFundsTransaction(req, res) {
         })
     }
 
-    let fromUserAccount = await accountModel.findOne({
-        user: req.user._id
-    })
+    // Check Idempotency Key
+    const isTransactionAlreadyExists = await transactionModel.findOne({
+        idempotencyKey: idempotencyKey
+    });
 
-    if (!fromUserAccount) {
-        fromUserAccount = await accountModel.create({
-            user: req.user._id
-        })
+    if (isTransactionAlreadyExists) {
+        if (isTransactionAlreadyExists.status === "COMPLETED") {
+            return res.status(200).json({
+                message: "Transaction already processed",
+                transaction: isTransactionAlreadyExists
+            });
+        }
     }
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    // Find or create System Bank Reserve User
+    let systemUser = await userModel.findOne({ systemUser: true });
+    if (!systemUser) {
+        systemUser = await userModel.create({
+            name: "System Reserve Vault",
+            email: "system@ledger.internal",
+            password: "SystemVaultPassword123!",
+            systemUser: true
+        });
+    }
 
-    const transaction = new transactionModel({
-        fromAccount: fromUserAccount._id,
-        toAccount,
-        amount,
-        idempotencyKey,
-        status: "PENDING",
+    // Find or create System Vault Account
+    let systemAccount = await accountModel.findOne({
+        user: systemUser._id
     });
-    await transaction.save({ session });
-    
-    const debitLedgerEntry = await ledgerModel.create([{
-        account: fromUserAccount._id,
-        amount: amount,
-        transaction: transaction._id,
-        type: "DEBIT",
-    }], { session });
 
-    const creditLedgerEntry = await ledgerModel.create([{
-        account: toAccount,
-        amount: amount,
-        transaction: transaction._id,
-        type: "CREDIT",
-    }], { session });
+    if (!systemAccount) {
+        systemAccount = await accountModel.create({
+            user: systemUser._id,
+            status: "ACTIVE",
+            currency: toUserAccount.currency || "INR"
+        });
+    }
 
-    transaction.status = "COMPLETED";
-    await transaction.save({ session });
+    try {
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
-    await session.commitTransaction();
-    session.endSession();
+        const transaction = new transactionModel({
+            fromAccount: systemAccount._id,
+            toAccount,
+            amount: Number(amount),
+            idempotencyKey,
+            status: "PENDING",
+        });
+        await transaction.save({ session });
+        
+        // Debit System Reserve Vault
+        const debitLedgerEntry = await ledgerModel.create([{
+            account: systemAccount._id,
+            amount: Number(amount),
+            transaction: transaction._id,
+            type: "DEBIT",
+        }], { session });
 
-    return res.status(201).json({
-        message: "Transaction completed successfully",
-        transaction: transaction
-    })
+        // Credit Target User Account
+        const creditLedgerEntry = await ledgerModel.create([{
+            account: toAccount,
+            amount: Number(amount),
+            transaction: transaction._id,
+            type: "CREDIT",
+        }], { session });
+
+        transaction.status = "COMPLETED";
+        await transaction.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.status(201).json({
+            message: "Initial funds transaction completed successfully",
+            transaction: transaction
+        });
+    } catch (err) {
+        console.error("Initial funds error:", err);
+        return res.status(500).json({
+            message: err.message || "Failed to process initial funds deposit"
+        });
+    }
 }
 
 module.exports = {
