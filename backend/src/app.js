@@ -11,7 +11,13 @@ const app = express();
 exports.app = app;
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: function (origin, callback) {
+        // Allow requests with no origin (e.g. mobile apps, postman, curl) or localhost, vercel, netlify
+        if (!origin || origin.includes('localhost') || origin.includes('vercel.app') || origin.includes('netlify.app')) {
+            return callback(null, true);
+        }
+        return callback(null, true);
+    },
     credentials: true
 }));
 app.use(cookieParser());

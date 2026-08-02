@@ -3,10 +3,13 @@
  * Directly targets the Express backend endpoints (/api)
  */
 
-// Toggle between 'live' (calling Express backend) and 'mock' (local demo mode)
 export const USE_MOCK_FALLBACK = false; 
 
-export const API_BASE_URL = '/api'; // Proxied to http://localhost:3000 via vite.config.js
+// Dynamic API Base URL: Uses VITE_API_URL environment variable if deployed, otherwise defaults to local proxy '/api'
+const envUrl = import.meta.env.VITE_API_URL;
+export const API_BASE_URL = envUrl 
+  ? (envUrl.endsWith('/api') ? envUrl : `${envUrl.replace(/\/$/, '')}/api`) 
+  : '/api';
 
 export async function request(endpoint, options = {}) {
   const token = localStorage.getItem('ledger_token');
