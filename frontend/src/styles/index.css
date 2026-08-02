@@ -135,6 +135,7 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   transition: all 0.2s ease;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .btn-primary {
@@ -206,6 +207,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.95rem;
   outline: none;
   transition: all 0.2s ease;
+  min-height: 44px;
 }
 
 .input-field:focus {
@@ -227,11 +229,25 @@ h1, h2, h3, h4, h5, h6 {
   animation: fadeIn 0.35s ease forwards;
 }
 
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
+/* Mobile Responsiveness Rules */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px !important;
+  }
+  
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .hide-on-mobile {
+    display: none !important;
+  }
 
-.glow-pill {
-  animation: pulseGlow 2s infinite ease-in-out;
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .glass-card {
+    padding: 16px !important;
+  }
 }

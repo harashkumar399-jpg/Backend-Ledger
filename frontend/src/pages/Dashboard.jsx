@@ -26,29 +26,29 @@ export default function Dashboard({ onNavigate }) {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1280px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
       
       {/* Top Banner */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Financial Overview</h1>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 800 }}>Financial Overview</h1>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             Real-time balance derived from double-entry ledger database.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={refetch} className="btn btn-secondary" title="Refresh all accounts">
-            <RefreshCw size={16} /> Sync All
+        <div style={{ display: 'flex', gap: '10px', width: window.innerWidth <= 480 ? '100%' : 'auto' }}>
+          <button onClick={refetch} className="btn btn-secondary" style={{ flex: 1 }} title="Refresh all accounts">
+            <RefreshCw size={15} /> Sync All
           </button>
-          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
-            <Plus size={18} /> New Account
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary" style={{ flex: 1 }}>
+            <Plus size={16} /> New Account
           </button>
         </div>
       </div>
 
       {/* Stat Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '28px' }}>
         <StatCard
           title="Total Net Ledger Balance"
           value={formatCurrency(totalBalance)}
@@ -73,22 +73,22 @@ export default function Dashboard({ onNavigate }) {
       </div>
 
       {/* Accounts Section */}
-      <div style={{ marginBottom: '36px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Your Ledger Accounts</h2>
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Your Ledger Accounts</h2>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             {accounts.length} {accounts.length === 1 ? 'Account' : 'Accounts'} Active
           </span>
         </div>
 
         {loading ? (
-          <div className="glass-card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            Loading ledger accounts from `/api/accounts`...
+          <div className="glass-card" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Loading ledger accounts...
           </div>
         ) : accounts.length === 0 ? (
-          <div className="glass-card" style={{ padding: '40px', textAlign: 'center' }}>
-            <p style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: '8px' }}>No Ledger Accounts Found</p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
+          <div className="glass-card" style={{ padding: '32px', textAlign: 'center' }}>
+            <p style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '6px' }}>No Ledger Accounts Found</p>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
               Create your first account to begin performing transactions.
             </p>
             <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
@@ -96,7 +96,7 @@ export default function Dashboard({ onNavigate }) {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
             {accounts.map((acc) => (
               <AccountCard
                 key={acc._id}
@@ -110,14 +110,14 @@ export default function Dashboard({ onNavigate }) {
       </div>
 
       {/* View Full History Banner */}
-      <div className="glass-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05))', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ background: 'var(--primary-light)', padding: '12px', borderRadius: '12px', color: 'var(--primary)' }}>
-            <History size={24} />
+      <div className="glass-card" style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05))', border: '1px solid rgba(99, 102, 241, 0.2)', flexWrap: 'wrap', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ background: 'var(--primary-light)', padding: '10px', borderRadius: '12px', color: 'var(--primary)' }}>
+            <History size={22} />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Transaction History & Ledger Logs</h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Transaction History & Ledger Logs</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
               {transactions.length > 0
                 ? `${transactions.length} transactions logged in your active session.`
                 : 'No transactions logged yet in this session.'}
@@ -125,8 +125,8 @@ export default function Dashboard({ onNavigate }) {
           </div>
         </div>
 
-        <button onClick={() => onNavigate('history')} className="btn btn-secondary">
-          View Full History <History size={16} />
+        <button onClick={() => onNavigate('history')} className="btn btn-secondary mobile-full-width">
+          View Full History <History size={15} />
         </button>
       </div>
 

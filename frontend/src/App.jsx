@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/common/Navbar';
@@ -14,13 +14,26 @@ import './styles/index.css';
 
 function MainApp() {
   const { isAuthenticated } = useAuth();
-  const [authView, setAuthView] = useState('login'); // 'login' | 'register'
+  const [authView, setAuthView] = useState('login');
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [pageParams, setPageParams] = useState({});
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Close mobile sidebar on window resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleNavigate = (page, params = {}) => {
     setCurrentPage(page);
     setPageParams(params);
+    setIsMobileOpen(false);
   };
 
   // If user is not logged in, show Auth screens
@@ -33,12 +46,22 @@ function MainApp() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      <Navbar currentPage={currentPage} onNavigate={handleNavigate} />
+      <Navbar
+        currentPage={currentPage}
+        onNavigate={handleNavigate}
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
+      />
       
-      <div style={{ display: 'flex', flex: 1 }}>
-        <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
+        <Sidebar
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          isMobileOpen={isMobileOpen}
+          setIsMobileOpen={setIsMobileOpen}
+        />
         
-        <main style={{ flex: 1, overflowY: 'auto', background: 'radial-gradient(ellipse at 80% 0%, rgba(99, 102, 241, 0.06), transparent 70%)' }}>
+        <main className="page-container" style={{ flex: 1, overflowY: 'auto', background: 'radial-gradient(ellipse at 80% 0%, rgba(99, 102, 241, 0.06), transparent 70%)', width: '100%' }}>
           {currentPage === 'dashboard' && <Dashboard onNavigate={handleNavigate} />}
           {currentPage === 'transfer' && (
             <TransferPage
