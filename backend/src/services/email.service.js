@@ -1,41 +1,63 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        type: 'OAuth2',
-        user: process.env.EMAIL_USER,
-        clientId: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
-        refreshToken: process.env.REFRESH_TOKEN,
-    },
-});
+const hasAppPassword = Boolean(process.env.EMAIL_PASS && process.env.EMAIL_PASS.trim());
+const hasOAuth = Boolean(process.env.REFRESH_TOKEN && process.env.CLIENT_ID && process.env.CLIENT_SECRET);
 
-// Verify the connection configuration
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('Error connecting to email server:', error);
-    } else {
-        console.log('Email server is ready to send messages');
-    }
-});
+let transporter = null;
+
+if (hasAppPassword) {
+    transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+} else if (hasOAuth) {
+    transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            type: 'OAuth2',
+            user: process.env.EMAIL_USER,
+            clientId: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
+            refreshToken: process.env.REFRESH_TOKEN,
+        },
+    });
+}
+
+if (transporter) {
+    transporter.verify((error, success) => {
+        if (error) {
+            console.warn('⚠️  Email server connection warning:', error.message || error);
+            console.warn('   To fix: add your Gmail App Password as EMAIL_PASS in backend/.env or refresh your OAuth2 token.');
+        } else {
+            console.log('✅ Email server is ready to send messages');
+        }
+    });
+} else {
+    console.warn('⚠️  No valid email credentials found in .env. Email notifications are currently disabled.');
+}
 
 // Function to send email
 const sendEmail = async (to, subject, text, html) => {
+    if (!transporter) {
+        console.warn('⚠️  Email not sent: Email transporter is not configured in .env');
+        return;
+    }
     try {
         const info = await transporter.sendMail({
-            from: `"Backend Ledger" <${process.env.EMAIL_USER}>`, // sender address
-            to, // list of receivers
-            subject, // Subject line
-            text, // plain text body
-            html, // html body
+            from: `"Backend Ledger" <${process.env.EMAIL_USER}>`,
+            to,
+            subject,
+            text,
+            html,
         });
 
         console.log('Message sent: %s', info.messageId);
-        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.error('Error sending email:', error.message || error);
     }
 };
 
