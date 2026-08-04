@@ -93,20 +93,19 @@ The React frontend application will launch at `http://localhost:5173/`.
 
 ## 🔌 API Endpoints Summary
 
-### 🔐 Authentication (`/api/v1/auth`)
-- `POST /register` - Register a new user account
-- `POST /login` - User login & JWT issuance
-- `POST /logout` - Revoke session & blacklist JWT
+### 🔐 Authentication (`/api/auth`)
+- `POST /api/auth/register` - Register a new user account
+- `POST /api/auth/login` - User login & set httpOnly JWT cookie
+- `POST /api/auth/logout` - User logout & blacklist JWT session token
 
-### 💼 Accounts (`/api/v1/accounts`)
-- `GET /` - Fetch all user accounts
-- `POST /` - Create a new financial account
-- `GET /:id` - Fetch account details & current balance
+### 💼 Accounts (`/api/accounts`) *(Protected)*
+- `POST /api/accounts/` - Create a new financial account
+- `GET /api/accounts/` - Get all accounts belonging to the logged-in user
+- `GET /api/accounts/balance/:accountId` - Get current balance of a specific account
 
-### 💸 Transactions & Ledger (`/api/v1/transactions`)
-- `POST /transfer` - Execute double-entry transfer with idempotency key
-- `POST /deposit` - Perform system deposit to account
-- `GET /history` - Query transaction ledger logs & history
+### 💸 Transactions & Ledger (`/api/transactions`) *(Protected)*
+- `POST /api/transactions/` - Execute double-entry transaction between accounts (with Idempotency Key support)
+- `POST /api/transactions/system/initial-funds` - System deposit / initial funds allocation (System User Authorized)
 
 ---
 
