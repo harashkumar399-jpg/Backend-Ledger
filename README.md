@@ -1,97 +1,117 @@
-# 🏥 SmartDiag Lite - Healthcare Diagnostic & Recommendation Platform
+# 💳 Backend Ledger - Double-Entry Financial Ledger System
 
-SmartDiag Lite is a full-stack web application engineered for EVE Healthcare portfolio demonstration. It features a Django REST Framework (DRF) backend API and a React.js frontend with diagnostic test search, rule-based symptom recommendations, a lab report summary parser, and an appointment booking workflow.
+A production-grade, full-stack double-entry financial ledger and transaction management platform. Built with **Node.js, Express, MongoDB (Mongoose)** on the backend and a modern **React + Vite** frontend.
+
+---
+
+## 🚀 Key Features
+
+- **Double-Entry Accounting System**: Implements strict financial ledger principles with debits, credits, and immutable transaction histories.
+- **Idempotency Protection**: Guarantees transaction safety and prevents duplicate billing using unique idempotency keys.
+- **Account Management**: Create and manage multi-type financial accounts (User Accounts, System Accounts, Ledger Entries).
+- **Funds Transfer & System Deposits**: Instant double-entry account-to-account transfers and system fund deposits.
+- **Secure Authentication**: JWT-based session security with httpOnly cookies, password hashing (`bcryptjs`), and token blacklisting.
+- **Interactive Dashboard**: Real-time balance tracking, transaction filters, and financial metrics.
+- **Backend API Integration Guide**: Built-in developer guide page with live API documentation.
+- **Mobile Responsive Design**: Modern dark theme UI with sliding drawer navigation and responsive layout.
+
+---
 
 ## 📁 Project Folder Structure
 
 ```
-smartdiag-lite/
-├── backend/                  # Django REST Framework
-│   ├── manage.py             # Django CLI runner
-│   ├── requirements.txt      # Python dependencies (Django, DRF, CorsHeaders)
-│   ├── db.sqlite3            # SQLite database (Pre-seeded with diagnostic tests)
-│   ├── core/                 # Settings & Root Router
-│   │   ├── settings.py
-│   │   └── urls.py
-│   └── diagnostics/          # Main healthcare app
-│       ├── models.py         # DiagnosticTest & Booking models
-│       ├── views.py          # ModelViewSets & API views
-│       ├── serializers.py    # DRF serializers
-│       ├── urls.py           # API endpoints
-│       └── utils.py          # Symptom matcher & Lab report text parser
-├── frontend/                 # React.js SPA Application
-│   ├── package.json          # Node dependencies
-│   ├── public/
+Backend-Ledger/
+├── backend/                  # Express & Node.js Backend Server
+│   ├── server.js             # Entry point
+│   ├── package.json          # Backend dependencies
 │   └── src/
-│       ├── index.css         # Modern design system (indigo & teal palette)
-│       ├── App.js            # Main view & state container
-│       ├── components/
-│       │   ├── Navbar.jsx    # Top navigation & tab bar
-│       │   ├── TestCard.jsx  # Test package card with symptom tags
-│       │   ├── BookingModal.jsx # Appointment booking modal form
-│       │   ├── ReportParser.jsx # Lab report analyzer component
-│       │   └── Toast.jsx     # User notification toast
-│       └── pages/
-│           ├── HomePage.jsx  # Catalog & Symptom search
-│           └── BookingsList.jsx # Scheduled appointment list
-└── README.md
+│       ├── app.js            # Express app configuration
+│       ├── config/           # Database & environment configuration
+│       ├── controllers/      # Route controllers (Auth, Accounts, Transactions)
+│       ├── middlewares/      # Authentication & Validation middleware
+│       ├── models/           # Mongoose schemas (User, Account, Transaction, Ledger, BlackList)
+│       ├── routes/           # API Endpoints (auth.routes, account.routes, transaction.routes)
+│       └── services/         # Business logic layer
+├── frontend/                 # React + Vite SPA Application
+│   ├── package.json          # Node dependencies
+│   ├── vite.config.js        # Vite configuration
+│   └── src/
+│       ├── App.jsx           # Main routing & state container
+│       ├── components/       # Reusable UI components (Navbar, Tables, Modals)
+│       ├── hooks/            # Custom React hooks (useAccounts, useTransactions, useAuth)
+│       ├── pages/            # App pages (Dashboard, Transfer, System Deposit, History, Guide)
+│       ├── services/         # API integration client
+│       └── styles/           # Styling & CSS utilities
+└── README.md                 # Project documentation
 ```
 
-## ⚡ Quick Start Guide (Run in 3 Steps)
+---
 
-### Step 1: Clone or Navigate to Project
-```bash
-cd smartdiag-lite
-```
+## ⚡ Quick Start Guide
 
-### Step 2: Start the Django Backend API Server
-Open a terminal and execute:
+### Prerequisites
+- Node.js (v18+)
+- MongoDB instance (local or MongoDB Atlas)
+
+---
+
+### Step 1: Backend Setup
 
 ```bash
 cd backend
-python -m pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+npm install
 ```
 
-The Django backend server will start at: `http://127.0.0.1:8000/`
+Create a `.env` file in the `backend/` directory:
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/backend_ledger
+JWT_SECRET=your_jwt_secret_key
+CORS_ORIGIN=http://localhost:5173
+```
 
-*(Note: Diagnostic test catalog data is automatically pre-seeded. You can also trigger re-seeding via `POST http://127.0.0.1:8000/api/seed/`).*
+Start the backend development server:
+```bash
+npm run dev
+```
+The backend API server will run at `http://localhost:5000/`.
 
-### Step 3: Start the React Frontend Application
-Open a second terminal window and execute:
+---
+
+### Step 2: Frontend Setup
+
+Open a new terminal window:
 
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
+The React frontend application will launch at `http://localhost:5173/`.
 
-The React frontend app will launch automatically in your browser at: `http://localhost:3000/`
+---
 
-## 🚀 Key Features & API Endpoints
+## 🔌 API Endpoints Summary
 
-1. **Diagnostic Test Catalog (`GET /api/tests/`)**
-   - Browse medical test packages (e.g., Complete Blood Count, Diabetes Screening, Thyroid Profile).
-   - Filter by category (Blood Test, Diabetes, Hormones, Organ Health, General Wellness).
+### 🔐 Authentication (`/api/v1/auth`)
+- `POST /register` - Register a new user account
+- `POST /login` - User login & JWT issuance
+- `POST /logout` - Revoke session & blacklist JWT
 
-2. **Rule-Based Symptom Matcher (`GET /api/recommend/?symptoms=fever,headache`)**
-   - Enter comma-separated symptoms (e.g. fever, fatigue, chest pain).
-   - Uses Django ORM `icontains` & `Q` objects in `diagnostics/utils.py` to recommend tailored diagnostic test packages.
+### 💼 Accounts (`/api/v1/accounts`)
+- `GET /` - Fetch all user accounts
+- `POST /` - Create a new financial account
+- `GET /:id` - Fetch account details & current balance
 
-3. **Lab Report Summary Generator (`POST /api/parse-report/`)**
-   - Paste raw lab report text or click "Load Sample Report".
-   - Extracts key biomarkers (Hemoglobin, Fasting Blood Sugar, Total Cholesterol, WBC, TSH, etc.).
-   - Compares measured numeric values against standard medical reference ranges and flags HIGH, LOW, or NORMAL status.
+### 💸 Transactions & Ledger (`/api/v1/transactions`)
+- `POST /transfer` - Execute double-entry transfer with idempotency key
+- `POST /deposit` - Perform system deposit to account
+- `GET /history` - Query transaction ledger logs & history
 
-4. **Appointment Booking System (`POST /api/bookings/`, `GET /api/bookings/`)**
-   - Interactive modal form allowing patients to select test date, preferred time slot, and patient contact details.
-   - View and manage scheduled appointments on the "My Bookings" page.
+---
 
 ## 🛠️ Technology Stack
 
-- **Backend:** Python 3.x, Django 5.x, Django REST Framework, Django CORS Headers, SQLite.
-- **Frontend:** React.js 18, Vanilla CSS Design System, Lucide Icons.
-
----
-*Created for EVE Healthcare Software Engineer Portfolio Application.*
+- **Backend:** Node.js, Express.js, MongoDB, Mongoose ODM, JWT, BcryptJS, Cookie-Parser.
+- **Frontend:** React 18, Vite, Lucide Icons, Custom CSS / Design System.
+- **Tools:** Nodemon, Dotenv, CORS.
